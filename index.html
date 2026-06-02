@@ -1,0 +1,1639 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HUMBAK — AI Creative Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://api.fontshare.com/v2/css?f[]=comico@400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #C87D52;
+    --orange-deep: #B86A3F;
+    --blue: #A8C5DA;
+    --blue-deep: #94B5CC;
+    --black: #0D0D0D;
+    --black-soft: #1A1A1A;
+    --paper: #F5F0EB;
+    --paper-dim: rgba(245,240,235,0.6);
+    --ink: rgba(13,13,13,0.55);
+    --ink-faint: rgba(13,13,13,0.35);
+    --line: rgba(13,13,13,0.08);
+    --line-dark: rgba(245,240,235,0.08);
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--orange);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--black);
+    overflow-x: hidden;
+    min-height: 100vh;
+    padding: 14px 14px 100px;
+    font-feature-settings: 'ss01', 'cv11';
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============ CARD WRAPPER ============ */
+  .card {
+    border-radius: 24px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    position: relative;
+  }
+  .card.blue { background: var(--blue); color: var(--black); }
+  .card.black { background: var(--black); color: var(--paper); border-radius: 0; margin: 14px -14px; }
+  .card.paper { background: var(--paper); color: var(--black); }
+
+  /* ============ COUNTDOWN TOP BAR ============ */
+  .countdown {
+    background: var(--black);
+    color: var(--paper);
+    padding: 11px 24px;
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    flex-wrap: wrap;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 400;
+  }
+  .cd-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--orange);
+    animation: pulse 1.6s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.8)} }
+
+  .cd-label { opacity: 0.5; }
+  .cd-timer {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    color: var(--orange);
+    font-weight: 500;
+    min-width: 145px;
+    text-align: center;
+  }
+  .cd-sep { opacity: 0.25; }
+  .cd-date { opacity: 0.5; }
+
+  /* ============ NAV ============ */
+  .nav {
+    padding: 18px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-logo {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .nav-logo .nav-mark {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transform: translateY(-2px);
+  }
+  .nav-logo .nav-mark img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transform-origin: center center;
+    will-change: transform;
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+  }
+  .nav-logo .nav-mark .nav-mark-spec {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    -webkit-mask-image: url("https://i.postimg.cc/Xqxnvb8q/b5ff3731-1251-4772-93ed-75ffdd59e9e9.png");
+    mask-image: url("https://i.postimg.cc/Xqxnvb8q/b5ff3731-1251-4772-93ed-75ffdd59e9e9.png");
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    transform-origin: center center;
+    will-change: transform, opacity, background;
+  }
+  .nav-logo .studio-tag {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+    color: var(--orange);
+    margin-left: -6px;
+  }
+  .nav-links { display: flex; gap: 28px; list-style: none; }
+  .nav-links a {
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--black); text-decoration: none; opacity: 0.45;
+    transition: opacity 0.2s;
+  }
+  .nav-links a:hover { opacity: 1; }
+  .nav-cta {
+    background: var(--black); color: var(--paper);
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    text-decoration: none; padding: 10px 22px; border-radius: 999px;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+  .nav-cta:hover { background: var(--orange); }
+
+  /* ============ HERO ============ */
+  .hero {
+    padding: 80px 56px 70px;
+    position: relative;
+    min-height: 78vh;
+    display: flex; flex-direction: column; justify-content: center;
+    overflow: hidden;
+  }
+  .hero-bg-mark {
+    position: absolute;
+    top: 50%; right: -40px; transform: translateY(-50%);
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(180px, 28vw, 360px);
+    color: rgba(13,13,13,0.04);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+    letter-spacing: -0.02em;
+  }
+  .hero-meta {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    opacity: 0.5;
+    animation: fadeUp 0.6s ease forwards;
+  }
+  .hero-meta::before {
+    content: ''; width: 28px; height: 1px; background: var(--black); opacity: 0.4;
+  }
+  .hero h1 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(72px, 12vw, 168px);
+    line-height: 0.86;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+    opacity: 0; animation: fadeUp 0.7s ease 0.1s forwards;
+  }
+  .hero h1 .accent { color: var(--orange); font-style: italic; }
+  .hero h2 {
+    font-family: 'Archivo Black', sans-serif;
+    font-style: italic;
+    font-size: clamp(28px, 4.2vw, 56px);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    margin-bottom: 32px;
+    max-width: 800px;
+    color: var(--black);
+    opacity: 0; animation: fadeUp 0.7s ease 0.2s forwards;
+  }
+  .hero h2 .accent { color: var(--orange); }
+  .hero h2 .scribble {
+    font-family: 'Archivo Black', sans-serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1em;
+    color: var(--orange);
+    display: inline-block;
+    letter-spacing: -0.01em;
+  }
+  .hero-sub {
+    font-family: 'DM Sans', sans-serif;
+    font-size: clamp(15px, 1.4vw, 18px);
+    font-style: italic;
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--ink);
+    max-width: 460px;
+    margin-bottom: 44px;
+    letter-spacing: 0;
+    opacity: 0; animation: fadeUp 0.7s ease 0.3s forwards;
+  }
+  .hero-cta-row {
+    display: flex; align-items: center; gap: 24px;
+    opacity: 0; animation: fadeUp 0.7s ease 0.4s forwards;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 12px;
+    background: var(--black); color: var(--paper);
+    padding: 18px 36px;
+    border-radius: 999px;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.22em;
+    text-transform: uppercase; text-decoration: none;
+    transition: all 0.25s ease;
+    border: none; cursor: pointer;
+  }
+  .btn-primary:hover { background: var(--orange); transform: translateY(-2px); }
+  .btn-primary svg { width: 14px; height: 14px; transition: transform 0.2s; }
+  .btn-primary:hover svg { transform: translateX(4px); }
+
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 8px;
+    color: var(--black); text-decoration: none;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.22em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--black);
+    padding-bottom: 4px;
+    transition: opacity 0.2s;
+  }
+  .btn-secondary:hover { opacity: 0.6; }
+
+  .hero-trust {
+    margin-top: 56px; padding-top: 28px;
+    border-top: 1px solid var(--line);
+    display: flex; align-items: center; gap: 24px;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    opacity: 0.5;
+    flex-wrap: wrap;
+    opacity: 0; animation: fadeUp 0.7s ease 0.5s forwards;
+  }
+  .hero-trust .stars { color: var(--orange); letter-spacing: 0.1em; }
+
+  /* ============ TICKER ============ */
+  .ticker {
+    background: var(--black); color: var(--paper);
+    padding: 14px 0;
+    overflow: hidden;
+    border-top: 1px solid var(--line-dark);
+  }
+  .ticker-track {
+    display: inline-flex; white-space: nowrap;
+    animation: scroll 30s linear infinite;
+  }
+  .ticker-item {
+    font-size: 10px; font-weight: 500; letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(245,240,235,0.4);
+    padding: 0 32px;
+    display: inline-flex; align-items: center; gap: 32px;
+  }
+  .ticker-item::after {
+    content: '✦'; color: var(--orange); opacity: 0.7;
+  }
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* ============ SECTION HEADERS ============ */
+  .sec-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin-bottom: 24px;
+    display: inline-flex; align-items: center; gap: 12px;
+  }
+  .sec-label::before {
+    content: ''; width: 36px; height: 1px; background: var(--orange); opacity: 0.5;
+  }
+  .black .sec-label { color: var(--orange); }
+
+  /* ============ PROBLEM SECTION (BLACK) ============ */
+  .problem {
+    padding: 120px 56px 100px;
+  }
+  .problem h2 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(40px, 6vw, 84px);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    max-width: 1000px;
+    margin-bottom: 32px;
+  }
+  .problem h2 .scribble {
+    font-family: 'Caveat', cursive; font-weight: 700;
+    color: var(--orange); display: inline-block;
+    transform: rotate(-2deg); font-size: 1em;
+  }
+  .problem-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 60px; margin-top: 80px;
+    padding-top: 60px;
+    border-top: 1px solid var(--line-dark);
+  }
+  .problem-col h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--paper); opacity: 0.4;
+    margin-bottom: 20px;
+  }
+  .problem-col h4 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(22px, 2.4vw, 32px); line-height: 1.15;
+    margin-bottom: 24px;
+  }
+  .problem-col h4 .scribble {
+    font-family: 'Caveat', cursive; font-weight: 700;
+    color: var(--paper-dim); display: inline-block;
+    transform: rotate(-1deg);
+  }
+  .problem-col h4 .scribble.orange { color: var(--orange); }
+  .problem-list {
+    list-style: none; display: flex; flex-direction: column; gap: 12px;
+    margin-bottom: 24px;
+  }
+  .problem-list li {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--paper-dim);
+    padding-left: 24px;
+    position: relative;
+  }
+  .problem-list li::before {
+    content: '+'; position: absolute; left: 0; color: var(--orange);
+  }
+  .problem-list.checks li::before {
+    content: '/'; color: var(--orange);
+  }
+  .problem-list.regular li {
+    font-family: 'DM Sans', sans-serif;
+    text-transform: none;
+    font-size: 16px;
+    letter-spacing: 0;
+    line-height: 1.55;
+  }
+  .problem-tag {
+    font-family: 'Caveat', cursive; font-weight: 700;
+    font-size: 22px; color: var(--paper-dim);
+    display: inline-block; transform: rotate(-1deg);
+    margin-top: 16px; margin-bottom: 8px;
+  }
+
+  /* ============ FOUR MOVES (PAPER) ============ */
+  .moves {
+    padding: 120px 56px;
+    text-align: center;
+  }
+  .moves .sec-label { color: var(--orange); justify-content: center; gap: 14px; }
+  .moves .sec-label::before {
+    content: ''; width: 5px; height: 5px; background: var(--orange);
+    border-radius: 50%; opacity: 1;
+  }
+  .moves .sec-label::after {
+    content: ''; width: 5px; height: 5px; background: var(--orange);
+    border-radius: 50%; opacity: 1;
+  }
+  .moves h2 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(56px, 8vw, 112px);
+    line-height: 0.92;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .moves h2 .accent { color: var(--orange); }
+  .moves p.lead {
+    font-size: 17px; line-height: 1.65;
+    color: var(--ink); max-width: 580px; margin: 32px auto 80px;
+  }
+  .moves-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 20px; max-width: 1200px; margin: 0 auto;
+  }
+  .move-card {
+    background: rgba(13,13,13,0.04);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 36px 28px;
+    text-align: left;
+    transition: all 0.25s ease;
+  }
+  .move-card:hover {
+    background: var(--black); color: var(--paper); transform: translateY(-4px);
+  }
+  .move-card:hover h4 { color: var(--paper); }
+  .move-card:hover p { color: var(--paper-dim); }
+  .move-card:hover .move-num { color: var(--orange); }
+  .move-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--orange);
+    letter-spacing: 0.18em; margin-bottom: 28px; display: block;
+  }
+  .move-card h4 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 22px; line-height: 1.15;
+    margin-bottom: 16px;
+  }
+  .move-card p {
+    font-size: 14px; line-height: 1.6; color: var(--ink);
+  }
+
+  /* ============ CURRICULUM (PAPER) ============ */
+  .curriculum { padding: 120px 56px; }
+  .curriculum-head {
+    display: flex; justify-content: space-between; align-items: end;
+    gap: 60px; margin-bottom: 80px; flex-wrap: wrap;
+  }
+  .curriculum-head h2 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(48px, 6vw, 80px);
+    line-height: 0.95; letter-spacing: -0.02em;
+    max-width: 700px;
+  }
+  .curriculum-head h2 .scribble {
+    font-family: 'Caveat', cursive; color: var(--orange); font-weight: 700;
+    display: inline-block; transform: rotate(-2deg);
+  }
+  .curriculum-stats {
+    display: flex; gap: 32px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  }
+  .curriculum-stats span { display: flex; flex-direction: column; gap: 6px; }
+  .curriculum-stats strong {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 32px; letter-spacing: -0.02em; color: var(--orange);
+  }
+  .curriculum-stats em {
+    font-style: normal; opacity: 0.5;
+  }
+
+  .modules-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .mod-card {
+    background: rgba(13,13,13,0.04);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 32px 28px;
+    transition: all 0.25s;
+    position: relative;
+  }
+  .mod-card:hover {
+    background: var(--black); color: var(--paper); transform: translateY(-3px);
+  }
+  .mod-card:hover h4, .mod-card:hover p { color: inherit; }
+  .mod-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--orange);
+    letter-spacing: 0.2em; margin-bottom: 24px; display: block;
+  }
+  .mod-icon {
+    position: absolute; top: 28px; right: 28px;
+    width: 24px; height: 24px;
+    color: var(--ink-faint);
+  }
+  .mod-card:hover .mod-icon { color: var(--orange); }
+  .mod-card h4 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 20px; line-height: 1.2;
+    margin-bottom: 14px;
+    padding-right: 30px;
+  }
+  .mod-card p {
+    font-size: 13px; line-height: 1.6; color: var(--ink);
+  }
+
+  /* ============ CRAFT (zdjęcia 3 w rzędzie, BLUE) ============ */
+  .craft {
+    padding: 120px 56px;
+  }
+  .craft .sec-label { color: var(--orange); }
+  .craft .sec-label::before { background: var(--orange); }
+  .craft-head {
+    display: flex; justify-content: space-between; align-items: end;
+    gap: 60px; margin-bottom: 80px; flex-wrap: wrap;
+  }
+  .craft-head h2 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(48px, 6vw, 80px);
+    line-height: 0.95; letter-spacing: -0.02em;
+    max-width: 760px;
+  }
+  .craft-head h2 .scribble {
+    font-family: 'Caveat', cursive; font-weight: 700;
+    color: var(--orange); display: inline-block;
+    transform: rotate(-2deg); font-size: 1.05em;
+  }
+  .craft-head p {
+    font-size: 16px; line-height: 1.7;
+    color: var(--ink);
+    max-width: 380px;
+  }
+  .craft-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .craft-card {
+    background: rgba(13,13,13,0.04);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+    display: flex; flex-direction: column;
+  }
+  .craft-card:hover {
+    transform: translateY(-6px);
+  }
+  .craft-img {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    position: relative;
+    background: rgba(13,13,13,0.06);
+  }
+  .craft-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.6s ease;
+  }
+  /* Fallback for browsers without aspect-ratio support */
+  @supports not (aspect-ratio: 4 / 5) {
+    .craft-img { height: 0; padding-bottom: 125%; }
+    .craft-img img { position: absolute; top: 0; left: 0; }
+  }
+  .craft-card:hover .craft-img img {
+    transform: scale(1.04);
+  }
+  .craft-num {
+    position: absolute;
+    top: 20px; left: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.22em;
+    color: var(--paper);
+    background: rgba(13,13,13,0.6);
+    padding: 6px 12px;
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+  }
+  .craft-body {
+    padding: 28px 28px 32px;
+  }
+  .craft-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin-bottom: 14px;
+    display: block;
+  }
+  .craft-body h4 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 24px;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin-bottom: 14px;
+  }
+  .craft-body p {
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink);
+  }
+
+  /* ============ DIRECTION + AUTOMATION (BLUE) ============ */
+  .system { padding: 120px 56px; }
+  .system .sec-label { color: var(--black); opacity: 0.6; }
+  .system .sec-label::before { background: var(--black); }
+  .system h2 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(42px, 5.5vw, 72px);
+    line-height: 0.96; letter-spacing: -0.02em;
+    margin-bottom: 16px;
+  }
+  .system h2 .scribble {
+    font-family: 'Caveat', cursive; font-weight: 700;
+    color: var(--orange); display: inline-block;
+    transform: rotate(-1deg);
+  }
+  .system-split {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 60px; margin-top: 80px;
+  }
+  .system-card {
+    background: rgba(13,13,13,0.06);
+    border-radius: 20px; padding: 48px 40px;
+  }
+  .system-card .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--orange); margin-bottom: 28px; display: block;
+  }
+  .system-card h3 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 32px; line-height: 1.1;
+    margin-bottom: 20px;
+  }
+  .system-card h3 .scribble {
+    font-family: 'Caveat', cursive; font-weight: 700; color: var(--orange);
+    display: inline-block; transform: rotate(-2deg); font-size: 1.1em;
+  }
+  .system-card p {
+    font-size: 15px; line-height: 1.65; color: var(--ink);
+  }
+
+  /* ============ TESTIMONIALS (BLACK) ============ */
+  .testimonials { padding: 120px 56px; }
+  .testimonials h2 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(40px, 5vw, 64px);
+    line-height: 1; letter-spacing: -0.02em;
+    margin-bottom: 80px;
+  }
+  .testimonials h2 .accent { color: var(--orange); }
+  .testimonials-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .test-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--line-dark);
+    border-radius: 16px;
+    padding: 36px 32px;
+    display: flex; flex-direction: column;
+    transition: background 0.25s;
+  }
+  .test-card:hover { background: rgba(255,255,255,0.07); }
+  .test-card .quote-mark {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 56px; color: var(--orange); line-height: 0.6;
+    margin-bottom: 16px; display: block;
+  }
+  .test-card blockquote {
+    font-size: 16px; line-height: 1.65; color: var(--paper-dim);
+    margin-bottom: 28px; flex: 1;
+    font-style: italic;
+  }
+  .test-card .author {
+    display: flex; align-items: center; gap: 14px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line-dark);
+  }
+  .test-avatar {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--orange), var(--orange-deep));
+    border-radius: 50%; flex-shrink: 0;
+    font-family: 'Archivo Black', sans-serif;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--paper); font-size: 14px;
+  }
+  .test-name { font-family: 'Archivo Black', sans-serif; font-size: 14px; }
+  .test-role { font-size: 11px; color: var(--paper-dim); margin-top: 2px; }
+
+  /* ============ PRICING (BLACK) ============ */
+  .pricing { padding: 120px 56px; text-align: center; }
+  .pricing h2 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(48px, 7vw, 96px);
+    line-height: 0.95; letter-spacing: -0.02em;
+    margin-bottom: 16px;
+  }
+  .pricing h2 .accent { color: var(--orange); font-style: italic; }
+  .pricing > p.lead {
+    font-size: 17px; line-height: 1.6; color: var(--paper-dim);
+    max-width: 560px; margin: 24px auto 60px;
+  }
+
+  .countdown-big {
+    display: flex; justify-content: center; gap: 24px;
+    margin-bottom: 80px;
+  }
+  .cdb-block {
+    text-align: center;
+    min-width: 92px;
+  }
+  .cdb-num {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 56px; line-height: 1;
+    color: var(--paper);
+    margin-bottom: 8px;
+  }
+  .cdb-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.22em;
+    color: var(--paper-dim);
+    text-transform: uppercase;
+  }
+  .cdb-sep {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 56px; color: var(--orange); opacity: 0.4;
+    line-height: 1;
+  }
+
+  .price-card {
+    max-width: 560px; margin: 0 auto;
+    background: rgba(255,255,255,0.04);
+    border: 2px solid var(--orange);
+    border-radius: 24px;
+    padding: 56px 48px;
+    text-align: left;
+    position: relative;
+  }
+  .price-tag {
+    position: absolute; top: -16px; left: 50%; transform: translateX(-50%);
+    background: var(--orange); color: var(--paper);
+    padding: 8px 20px; border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    font-weight: 500;
+  }
+  .price-card h3 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 32px; line-height: 1.1;
+    margin-bottom: 8px;
+  }
+  .price-card .desc {
+    font-size: 14px; color: var(--paper-dim); margin-bottom: 32px;
+    font-style: italic;
+  }
+  .price-row {
+    display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px;
+  }
+  .price-old {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 24px; color: var(--paper-dim);
+    text-decoration: line-through;
+  }
+  .price-now {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 88px; line-height: 1; color: var(--paper);
+    letter-spacing: -0.02em;
+  }
+  .price-unit {
+    font-size: 16px; color: var(--paper-dim);
+  }
+  .price-meta {
+    font-size: 12px; color: var(--paper-dim);
+    margin-bottom: 36px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.08em;
+  }
+  .price-features {
+    list-style: none; display: flex; flex-direction: column; gap: 14px;
+    margin-bottom: 40px;
+  }
+  .price-features li {
+    font-size: 14px; line-height: 1.5; color: var(--paper);
+    padding-left: 28px; position: relative;
+  }
+  .price-features li::before {
+    content: '✓'; position: absolute; left: 0; color: var(--orange);
+    font-weight: bold;
+  }
+  .price-card .btn-primary {
+    background: var(--orange); width: 100%; justify-content: center;
+    padding: 22px 36px; font-size: 12px;
+  }
+  .price-card .btn-primary:hover { background: var(--paper); color: var(--black); }
+  .price-guarantee {
+    margin-top: 32px; font-size: 11px; color: var(--paper-dim);
+    letter-spacing: 0.16em; text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ============ FAQ (BLUE) ============ */
+  .faq { padding: 120px 56px; }
+  .faq-head {
+    display: flex; justify-content: space-between; align-items: end;
+    margin-bottom: 60px; gap: 60px; flex-wrap: wrap;
+  }
+  .faq-head h2 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(48px, 6vw, 80px);
+    line-height: 0.95; letter-spacing: -0.02em;
+  }
+  .faq-head h2 .accent { color: var(--orange); font-style: italic; }
+  .faq-head p {
+    font-size: 15px; color: var(--ink); max-width: 320px; line-height: 1.6;
+  }
+  .faq-list { display: flex; flex-direction: column; gap: 0; }
+  .faq-item {
+    border-top: 1px solid rgba(13,13,13,0.12);
+    padding: 28px 0;
+  }
+  .faq-item:last-child { border-bottom: 1px solid rgba(13,13,13,0.12); }
+  .faq-q {
+    display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer; gap: 24px;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 18px; line-height: 1.3;
+    transition: color 0.2s;
+  }
+  .faq-q:hover { color: var(--orange); }
+  .faq-icon {
+    width: 24px; height: 24px;
+    border: 1px solid var(--black);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.25s;
+    font-size: 14px;
+  }
+  .faq-item.open .faq-icon { background: var(--orange); border-color: var(--orange); color: var(--paper); transform: rotate(45deg); }
+  .faq-a {
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.4s ease, margin-top 0.3s;
+    font-size: 15px; line-height: 1.7;
+    color: var(--ink);
+    padding-right: 48px;
+  }
+  .faq-item.open .faq-a { max-height: 400px; margin-top: 20px; }
+
+  /* ============ FINAL CTA (ORANGE-DEEP) ============ */
+  .final-cta {
+    padding: 140px 56px;
+    text-align: center;
+    background: var(--paper);
+    border-radius: 24px;
+    margin: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .final-cta::before {
+    content: '✦';
+    position: absolute;
+    font-family: 'Archivo Black', sans-serif;
+    color: rgba(200,125,82,0.06);
+    font-size: 480px;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    pointer-events: none;
+    line-height: 1;
+  }
+  .final-cta h2 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(56px, 9vw, 128px);
+    line-height: 0.92; letter-spacing: -0.03em;
+    margin-bottom: 32px; position: relative;
+  }
+  .final-cta h2 .scribble {
+    font-family: 'Caveat', cursive; font-weight: 700;
+    color: var(--orange); display: inline-block;
+    transform: rotate(-2deg);
+  }
+  .final-cta p {
+    font-size: 18px; line-height: 1.6; color: var(--ink);
+    max-width: 540px; margin: 0 auto 48px; position: relative;
+  }
+  .final-cta .btn-primary { font-size: 13px; padding: 24px 48px; position: relative; }
+  .final-cta-meta {
+    margin-top: 32px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--ink-faint);
+    position: relative;
+  }
+  .final-cta-meta .accent {
+    color: var(--orange); display: inline-flex; align-items: center; gap: 6px;
+  }
+  .final-cta-meta .accent::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--orange); animation: pulse 1.6s infinite;
+  }
+
+  /* ============ FOOTER (BLACK) ============ */
+  .footer {
+    padding: 80px 56px 40px;
+  }
+  .footer-top {
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 60px; margin-bottom: 80px;
+  }
+  .footer-brand h3 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 24px; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .footer-brand h3::before {
+    content: '✦'; color: var(--orange);
+  }
+  .footer-brand p {
+    font-size: 14px; line-height: 1.65; color: var(--paper-dim);
+    max-width: 340px;
+  }
+  .footer-col h5 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--orange); margin-bottom: 20px;
+  }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .footer-col a {
+    font-size: 14px; color: var(--paper-dim); text-decoration: none;
+    transition: color 0.2s;
+  }
+  .footer-col a:hover { color: var(--paper); }
+  .footer-bottom {
+    padding-top: 40px;
+    border-top: 1px solid var(--line-dark);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--paper-dim);
+    flex-wrap: wrap; gap: 20px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ============ STICKY CTA + MENU ============ */
+  .sticky-bar {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    z-index: 100;
+    background: var(--black);
+    border-radius: 999px;
+    padding: 8px 8px 8px 28px;
+    display: flex; align-items: center; gap: 24px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    border: 1px solid rgba(245,240,235,0.1);
+  }
+  .sticky-bar-links { display: flex; gap: 22px; list-style: none; }
+  .sticky-bar-links a {
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--paper-dim); text-decoration: none;
+    transition: color 0.2s;
+  }
+  .sticky-bar-links a:hover, .sticky-bar-links a.active { color: var(--paper); }
+  .sticky-bar .sticky-cta {
+    background: var(--orange); color: var(--paper);
+    padding: 14px 24px; border-radius: 999px;
+    font-size: 10px; font-weight: 500; letter-spacing: 0.2em;
+    text-transform: uppercase; text-decoration: none;
+    transition: background 0.2s;
+  }
+  .sticky-bar .sticky-cta:hover { background: var(--paper); color: var(--black); }
+
+  /* ============ ANIMATIONS ============ */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 1024px) {
+    .moves-grid, .modules-grid, .testimonials-grid { grid-template-columns: repeat(2, 1fr); }
+    .system-split { grid-template-columns: 1fr; }
+    .footer-top { grid-template-columns: 1fr 1fr; }
+    .problem-grid { grid-template-columns: 1fr; gap: 40px; }
+    .craft-grid { grid-template-columns: 1fr; }
+    .craft-head { flex-direction: column; align-items: flex-start; gap: 28px; }
+  }
+  @media (max-width: 768px) {
+    body { padding: 8px 8px 100px; }
+    .hero, .problem, .moves, .curriculum, .system, .testimonials, .pricing, .faq, .final-cta, .craft { padding: 70px 28px; }
+    .footer { padding: 60px 28px 30px; }
+    .nav { padding: 14px 20px; }
+    .nav-links { display: none; }
+    .countdown { font-size: 9px; gap: 8px; padding: 10px 16px; }
+    .cd-timer { min-width: auto; font-size: 10px; }
+    .moves-grid, .modules-grid, .testimonials-grid { grid-template-columns: 1fr; }
+    .footer-top { grid-template-columns: 1fr; gap: 40px; }
+    .footer-bottom { flex-direction: column; align-items: flex-start; }
+    .countdown-big { gap: 8px; }
+    .cdb-num { font-size: 36px; }
+    .cdb-sep { font-size: 36px; }
+    .price-card { padding: 40px 28px; }
+    .price-now { font-size: 64px; }
+    .sticky-bar-links { display: none; }
+    .sticky-bar { padding: 6px; }
+    .hero-cta-row { flex-direction: column; align-items: flex-start; }
+    .craft-grid { grid-template-columns: 1fr; gap: 16px; }
+    .craft-img { aspect-ratio: 4 / 5; min-height: 320px; }
+    .craft-body { padding: 24px; }
+    .craft-body h4 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HERO CARD (BLUE) ============ -->
+<div class="card blue">
+  <!-- Countdown bar -->
+  <div class="countdown">
+    <span class="cd-dot"></span>
+    <span class="cd-label">Pre-order kończy się za</span>
+    <span class="cd-timer" id="countdown">—</span>
+    <span class="cd-sep">·</span>
+    <span class="cd-dot" style="background: var(--orange);"></span>
+    <span class="cd-date" style="color: var(--orange); opacity: 0.85;">Cena rośnie 4 czerwca</span>
+  </div>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav-logo"><span class="nav-mark"><img id="navMarkImg" src="https://i.postimg.cc/Xqxnvb8q/b5ff3731-1251-4772-93ed-75ffdd59e9e9.png" alt=""><span class="nav-mark-spec" id="navMarkSpec"></span></span>HUMBAK<span class="studio-tag">STUDIO</span></div>
+    <ul class="nav-links">
+      <li><a href="#problem">Dlaczego</a></li>
+      <li><a href="#moves">Jak</a></li>
+      <li><a href="#curriculum">Program</a></li>
+      <li><a href="#testimonials">Opinie</a></li>
+      <li><a href="#pricing">Cena</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <a href="#pricing" class="nav-cta">Pre-order →</a>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-bg-mark">STUDIO</div>
+    <div class="hero-meta">AI Creative Visuals · Edycja 01</div>
+    <h1>
+      Zbuduj <span class="accent">swoje</span><br>
+      <span class="accent">AI</span> Studio.
+    </h1>
+    <h2>
+      Takie, które <span class="scribble">wygrywa</span> z agencją.
+    </h2>
+    <p class="hero-sub">
+      Bez doświadczenia w designie, technologii ani sprzedaży. Praktyczny system zamiast kursu o promptach.
+    </p>
+    <div class="hero-cta-row">
+      <a href="#pricing" class="btn-primary">
+        Zamów w pre-order
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </a>
+      <a href="#moves" class="btn-secondary">Zobacz program</a>
+    </div>
+    <div class="hero-trust">
+      <span class="stars">★★★★★</span>
+      <span>1000+ uczestników</span>
+      <span>·</span>
+      <span>34 kraje</span>
+      <span>·</span>
+      <span>Edycja 01 · 2026</span>
+    </div>
+  </section>
+
+  <!-- Ticker -->
+  <div class="ticker">
+    <div class="ticker-track">
+      <span class="ticker-item">Midjourney</span>
+      <span class="ticker-item">Flux</span>
+      <span class="ticker-item">Kling AI</span>
+      <span class="ticker-item">Runway</span>
+      <span class="ticker-item">Art Direction</span>
+      <span class="ticker-item">Prompt Architecture</span>
+      <span class="ticker-item">Campaign Thinking</span>
+      <span class="ticker-item">AI Video</span>
+      <span class="ticker-item">Brand Systems</span>
+      <span class="ticker-item">Midjourney</span>
+      <span class="ticker-item">Flux</span>
+      <span class="ticker-item">Kling AI</span>
+      <span class="ticker-item">Runway</span>
+      <span class="ticker-item">Art Direction</span>
+      <span class="ticker-item">Prompt Architecture</span>
+      <span class="ticker-item">Campaign Thinking</span>
+      <span class="ticker-item">AI Video</span>
+      <span class="ticker-item">Brand Systems</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PROBLEM SECTION (BLACK) ============ -->
+<section class="card black" id="problem">
+  <div class="problem">
+    <div class="sec-label">Nowa rzeczywistość</div>
+    <h2>
+      Każdy potrafi teraz tworzyć obrazki AI.<br>
+      <span class="scribble">To szansa. I to problem.</span>
+    </h2>
+
+    <div class="problem-grid">
+      <div class="problem-col">
+        <h3>01 — Co większość robi źle</h3>
+        <h4>Większość myśli, że robota to <span class="scribble">żeby było ładniej.</span></h4>
+        <ul class="problem-list">
+          <li>+ Lepszy prompt</li>
+          <li>+ Lepszy model</li>
+          <li>+ Czystsze światło</li>
+          <li>+ Realistyczniejsza skóra</li>
+          <li>+ Bardziej kinowy ruch kamery</li>
+          <li>+ Szalone animacje AI</li>
+        </ul>
+        <p class="problem-tag">— TO WSZYSTKO MA ZNACZENIE.</p>
+        <p style="font-size:15px;line-height:1.6;color:var(--paper-dim);margin-top:8px;">
+          Ale to nie jest to, co sprawia, że za pracę kreatywną ktoś płaci.
+        </p>
+      </div>
+      <div class="problem-col">
+        <h3>02 — Co naprawdę kupują</h3>
+        <h4>Marki, klienci, audytoria nie kupują ładnego obrazka. <span class="scribble orange">Kupują powód.</span></h4>
+        <ul class="problem-list checks regular">
+          <li>Powód, dlaczego ten wizual pasuje do marki.</li>
+          <li>Powód, dlaczego ten pomysł trafia do odbiorcy.</li>
+          <li>Powód, dlaczego ta kampania ma sens akurat teraz.</li>
+          <li>Powód, dlaczego ta kampania faktycznie sprzedaje.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOUR MOVES (PAPER) ============ -->
+<section class="card paper" id="moves">
+  <div class="moves">
+    <div class="sec-label">Struktura studia</div>
+    <h2>Cztery ruchy.<br><span class="accent">Od zera do designera.</span></h2>
+    <p class="lead">
+      Cztery moduły, które krok po kroku prowadzą do zbudowania dochodowego studia.
+    </p>
+
+    <div class="moves-grid">
+      <div class="move-card">
+        <span class="move-num">/ 01</span>
+        <h4>Zrozum branding i markę</h4>
+        <p>Nauczysz się czytać markę głębiej — jej język, smak, estetykę i wartości. Ale przede wszystkim rozwiniesz własny taste i nauczysz się go używać: tworzyć kierunek kreatywny od zera, decydować co odbiorca ma poczuć, i budować wizję spójną z marką — nie tylko ją odwzorowywać.</p>
+      </div>
+      <div class="move-card">
+        <span class="move-num">/ 02</span>
+        <h4>Zrealizuj wizję</h4>
+        <p>Tu przechodzisz od pomysłu do wykonania. Nauczysz się korzystać z AI i narzędzi produkcyjnych tak, żeby świadomie prowadzić obraz, poprawiać błędy, kontrolować detal i tworzyć materiały na poziomie, za który marki chcą płacić.</p>
+      </div>
+      <div class="move-card">
+        <span class="move-num">/ 03</span>
+        <h4>Zdobywanie klientów</h4>
+        <p>Nauczysz się zamieniać swoje prace w powód do rozmowy z marką. Portfolio, wiadomości, propozycje współpracy i cały proces kontaktu — ułożone tak, żeby marka od razu widziała nie ofertę, ale konkretną możliwość do wykorzystania.</p>
+      </div>
+      <div class="move-card">
+        <span class="move-num">/ 04</span>
+        <h4>Zbuduj system</h4>
+        <p>Dostaniesz szkielety i systemy pracy, które pomagają szybciej robić research, planować kampanie, tworzyć materiały i prowadzić projekty. Mniej chaosu, więcej kontroli i większa produktywność.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CURRICULUM (PAPER) ============ -->
+<section class="card paper" id="curriculum">
+  <div class="curriculum">
+    <div class="curriculum-head">
+      <h2>Pełny program. <span class="scribble">Bez ściemy.</span></h2>
+      <div class="curriculum-stats">
+        <span><strong>12+</strong><em>Modułów</em></span>
+        <span><strong>60+</strong><em>Lekcji</em></span>
+        <span><strong>14</strong><em>Agentów AI</em></span>
+      </div>
+    </div>
+
+    <div class="modules-grid">
+      <div class="mod-card">
+        <span class="mod-num">/ 01</span>
+        <svg class="mod-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        <h4>Model CAS</h4>
+        <p>Operacyjny szkielet całego studia. Director + 14 agentów, wspólny Brain, flow zlecenia: Find → Win → Decode → Produce → Deliver → Keep.</p>
+      </div>
+      <div class="mod-card">
+        <span class="mod-num">/ 02</span>
+        <svg class="mod-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        <h4>Studio Brain</h4>
+        <p>Pamięć współdzielona. Każdy brand system, referencja, prompt, brief w jednym miejscu. 5 lekcji — od zera do gotowego Brainu.</p>
+      </div>
+      <div class="mod-card">
+        <span class="mod-num">/ 03</span>
+        <svg class="mod-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7l9 6 9-6M3 7v10l9 6 9-6V7"/></svg>
+        <h4>14-osobowy team agentów</h4>
+        <p>Creative Director, Brief Reader, Prompt Engineer, Producer, Consistency Lead, Motion Lead, Outreach Writer i więcej. Każdy ma rolę i przekazuje zadanie dalej.</p>
+      </div>
+      <div class="mod-card">
+        <span class="mod-num">/ 04</span>
+        <svg class="mod-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h20v14H2zM8 21h8M12 17v4"/></svg>
+        <h4>Czytanie briefa</h4>
+        <p>Rozszyfruj markę w godzinę: język wizualny, kultura, pozycjonowanie, konkurencja, voice. Napisz interpretację, która wygrywa zlecenie.</p>
+      </div>
+      <div class="mod-card">
+        <span class="mod-num">/ 05</span>
+        <svg class="mod-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
+        <h4>Standard jakości</h4>
+        <p>Światło, optyka, kolor, typografia, kompozycja, casting, ruch. Realizm skóry, metoda Nano Banana, Genesis prompting. 13 lekcji o reżyserowaniu AI.</p>
+      </div>
+      <div class="mod-card">
+        <span class="mod-num">/ 06</span>
+        <svg class="mod-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        <h4>Deliverables</h4>
+        <p>Format po formacie: produkt, social, static ads, video, UGC, reklamy wideo. Plus consistency engineering — ta sama twarz, ten sam produkt, każda klatka.</p>
+      </div>
+      <div class="mod-card">
+        <span class="mod-num">/ 07</span>
+        <svg class="mod-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
+        <h4>Skalowanie z AI</h4>
+        <p>Jak z jednego zlecenia zrobić sześć. Jak z jednej kampanii zrobić system. Templating, automatyzacja, własne workflows w Claude / ChatGPT.</p>
+      </div>
+      <div class="mod-card">
+        <span class="mod-num">/ 08</span>
+        <svg class="mod-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/></svg>
+        <h4>Strona biznesowa</h4>
+        <p>Pricing, ofertowanie, finding clients, retainery, kontrakty. Strona pieniędzy — nie jako bonus, tylko rdzeń kursu.</p>
+      </div>
+      <div class="mod-card">
+        <span class="mod-num">/ 09</span>
+        <svg class="mod-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14M22 4L12 14.01l-3-3"/></svg>
+        <h4>Launch studia</h4>
+        <p>Jak otworzyć studio, jak je nazwać, jak zbudować pierwsze portfolio z 6 kampanii. Praktyczny launch — nie teoria, tylko realne kroki.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CRAFT — co opanujesz (BLUE) ============ -->
+<section class="card blue" id="craft">
+  <div class="craft">
+    <div class="craft-head">
+      <h2>Twórz AI, które <span class="scribble">nie wygląda</span> jak AI.</h2>
+      <p>Powodem, dla którego większość AI nie sprzedaje się markom, nie są słabe prompty. To zasady pod spodem. Akademia idzie głęboko w warstwę, którą inne kursy pomijają.</p>
+    </div>
+
+    <div class="craft-grid">
+      <div class="craft-card">
+        <div class="craft-img">
+          <span class="craft-num">/ 01</span>
+          <img src="https://i.imgur.com/E4bhRth.jpeg" alt="Skin realism" loading="lazy">
+        </div>
+        <div class="craft-body">
+          <span class="craft-label">Skin realism</span>
+          <h4>Skóra, która wygląda jak skóra.</h4>
+          <p>Pory, tekstura, interakcja ze światłem. Różnica między modelem, którego kastowałeś, a tym, którego model po prostu wygenerował.</p>
+        </div>
+      </div>
+
+      <div class="craft-card">
+        <div class="craft-img">
+          <span class="craft-num">/ 02</span>
+          <img src="https://i.imgur.com/YzZUurT.png" alt="Dynamiczne ujęcia" loading="lazy">
+        </div>
+        <div class="craft-body">
+          <span class="craft-label">Dynamiczne ujęcia</span>
+          <h4>Ruch, który czuć w klatce.</h4>
+          <p>Motion blur, kompozycja w akcji, kąt który robi robotę. Kadry, które wyglądają jakby ktoś naprawdę je złapał — nie wyrenderował.</p>
+        </div>
+      </div>
+
+      <div class="craft-card">
+        <div class="craft-img">
+          <span class="craft-num">/ 03</span>
+          <img src="https://i.imgur.com/R5aGIFN.png" alt="Color grading" loading="lazy">
+        </div>
+        <div class="craft-body">
+          <span class="craft-label">Color grading</span>
+          <h4>Paleta, która buduje markę.</h4>
+          <p>Świadomy kolor, kontrast, klimat sceny. Tego samego promptu obróbka decyduje, czy klatka trafia na kampanię, czy do kosza.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DIRECTION + AUTOMATION (BLUE) ============ -->
+<section class="card blue" id="system">
+  <div class="system">
+    <div class="sec-label">Filozofia kursu</div>
+    <h2>
+      Cały program kręci się wokół<br>
+      <span class="scribble">Direction + Automation.</span>
+    </h2>
+    <p style="font-size:17px;line-height:1.65;color:var(--ink);max-width:600px;margin-top:8px;">
+      Dwie połówki każdej dobrej kampanii. Bez direction — robota nie ma sensu. Bez automation — nie skalujesz. Razem to jest właśnie to, za co marki płacą.
+    </p>
+
+    <div class="system-split">
+      <div class="system-card">
+        <span class="label">Połówka pierwsza</span>
+        <h3><span class="scribble">Direction</span> daje pracy sens.</h3>
+        <p>Naucz się myśleć jak creative director — nie zgadywać promptów, tylko reżyserować. Decyzje, intencja, hierarchia, brief. To skill, którego AI nie zastąpi.</p>
+      </div>
+      <div class="system-card">
+        <span class="label">Połówka druga</span>
+        <h3><span class="scribble">Automation</span> daje ci dźwignię.</h3>
+        <p>14 agentów, jeden Brain, system który robotę robi za ciebie. Od research'u briefu po ofertowanie — przepływy, które działają w nocy.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS (BLACK) ============ -->
+<section class="card black" id="testimonials">
+  <div class="testimonials">
+    <h2>Co mówią <span class="accent">pierwsi uczestnicy.</span></h2>
+
+    <div class="testimonials-grid">
+      <div class="test-card">
+        <span class="quote-mark">"</span>
+        <blockquote>Po dwóch tygodniach mam podpisany pierwszy retainer. Nie chodziło o lepsze prompty — chodziło o to, że nareszcie wiem, co sprzedaję.</blockquote>
+        <div class="author">
+          <div class="test-avatar">MJ</div>
+          <div>
+            <div class="test-name">Marta J.</div>
+            <div class="test-role">Freelance creative · Warszawa</div>
+          </div>
+        </div>
+      </div>
+      <div class="test-card">
+        <span class="quote-mark">"</span>
+        <blockquote>Sześć miesięcy próbowałem złapać pierwszego klienta na AI visuals. Ten kurs uporządkował mi głowę w trzy tygodnie.</blockquote>
+        <div class="author">
+          <div class="test-avatar">PK</div>
+          <div>
+            <div class="test-name">Piotr K.</div>
+            <div class="test-role">AI visuals · Kraków</div>
+          </div>
+        </div>
+      </div>
+      <div class="test-card">
+        <span class="quote-mark">"</span>
+        <blockquote>14 agentów to nie buzzword. Mam ich realnie postawionych — robią ofertowanie i research. Jedna osoba, robota całego zespołu.</blockquote>
+        <div class="author">
+          <div class="test-avatar">AS</div>
+          <div>
+            <div class="test-name">Aleksandra S.</div>
+            <div class="test-role">Studio operatorka · Berlin</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRICING (BLACK) ============ -->
+<section class="card black" id="pricing">
+  <div class="pricing">
+    <div class="sec-label" style="justify-content:center;display:flex;">Pre-order otwarty</div>
+    <h2>Wejdź teraz.<br><span class="accent">Cena rośnie 4 czerwca.</span></h2>
+    <p class="lead">
+      Lifetime dostęp. 12 miesięcy klubu HUMBAK gratis. Bez subskrypcji, bez auto-doładowań.
+    </p>
+
+    <!-- Big countdown -->
+    <div class="countdown-big" id="big-countdown">
+      <div class="cdb-block"><div class="cdb-num" id="bd">00</div><div class="cdb-label">Dni</div></div>
+      <div class="cdb-sep">:</div>
+      <div class="cdb-block"><div class="cdb-num" id="bh">00</div><div class="cdb-label">Godzin</div></div>
+      <div class="cdb-sep">:</div>
+      <div class="cdb-block"><div class="cdb-num" id="bm">00</div><div class="cdb-label">Minut</div></div>
+      <div class="cdb-sep">:</div>
+      <div class="cdb-block"><div class="cdb-num" id="bs">00</div><div class="cdb-label">Sekund</div></div>
+    </div>
+
+    <div class="price-card">
+      <span class="price-tag">★ Pre-order offer</span>
+      <h3>HUMBAK Academy</h3>
+      <p class="desc">Cały system. Od zera do działającego AI Studio.</p>
+      <div class="price-row">
+        <span class="price-old">$399</span>
+        <span class="price-now">$219</span>
+        <span class="price-unit">/mo · 4×</span>
+      </div>
+      <p class="price-meta">$876 łącznie · cena pre-order · oszczędzasz $720</p>
+      <ul class="price-features">
+        <li>60+ lekcji. Lifetime dostęp.</li>
+        <li>6 praktycznych Buildów — realne kampanie dla realnych marek.</li>
+        <li>Studio Install Kit — agenci, Brain, workflows. Działa na twoim Claude / ChatGPT.</li>
+        <li>14 agentów AI postawionych pod twoje studio.</li>
+        <li>12 miesięcy klubu HUMBAK — weekly tool drops, AMA, networking.</li>
+        <li>100% Satisfaction Guarantee — money back, zero pytań.</li>
+      </ul>
+      <a href="#" class="btn-primary">
+        Zamów w pre-order
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </a>
+      <p class="price-guarantee">★ Money-back guarantee · 14 dni</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ (BLUE) ============ -->
+<section class="card blue" id="faq">
+  <div class="faq">
+    <div class="faq-head">
+      <h2>Pytania? <span class="accent">Mamy odpowiedzi.</span></h2>
+      <p>Nie znalazłeś tu swojego pytania? Napisz do nas — odpisujemy w 24h.</p>
+    </div>
+
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q">
+          <span>Czym jest HUMBAK Academy?</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-a">
+          To kompletny system budowy AI Creative Studio od zera. Nie kurs o promptach — operacyjny szkielet z 14 agentami, Brainem, programem 60+ lekcji i sześcioma realnymi Buildami.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">
+          <span>Czy nauczę się realizmu skóry, spójności produktu i postaci?</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-a">
+          Tak. Standard jakości to osobny moduł — 13 lekcji o reżyserowaniu AI. Metoda Nano Banana, Genesis prompting, consistency engineering — wszystko praktyczne.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">
+          <span>Dla kogo to jest? Czy potrzebuję doświadczenia?</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-a">
+          Dla każdego, kto chce zarabiać na AI visuals. Marketerzy, freelancerzy, kreatywni, właściciele marek. Nie potrzebujesz doświadczenia w designie, kodzie ani sprzedaży.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">
+          <span>Kiedy dostaję dostęp? Kiedy startuje kurs?</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-a">
+          Pierwsze moduły dostępne od razu po pre-orderze. Pełny program — start 14 czerwca 2026. Lifetime dostęp do wszystkich materiałów.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">
+          <span>Jak działa płatność? Czy dostaję pełny dostęp od razu?</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-a">
+          Możesz zapłacić jednorazowo ($799) lub w 4 ratach po $219. W obu opcjach masz pełny dostęp od razu — żadnych dripów, żadnego czekania.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">
+          <span>Ile czasu muszę poświęcić tygodniowo?</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-a">
+          Optymalnie 5-8h tygodniowo przez 12 tygodni. Wszystkie lekcje są nagrane — robisz w swoim tempie. Niektórzy kończą w 4 tygodnie, inni w 4 miesiące.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">
+          <span>Co jeśli nie spodoba mi się kurs?</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-a">
+          Masz 14 dni na zwrot bez pytań. Money-back guarantee. Jeśli kurs nie jest dla ciebie — oddajemy pełną kwotę.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA (PAPER) ============ -->
+<section class="card paper">
+  <div class="final-cta">
+    <h2>Twój ruch.<br><span class="scribble">Cena rośnie za chwilę.</span></h2>
+    <p>Każdy dzień zwłoki = $X więcej za ten sam kurs. Pre-order kończy się 4 czerwca.</p>
+    <a href="#pricing" class="btn-primary">
+      Zamów teraz w pre-order
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </a>
+    <p class="final-cta-meta">
+      <span class="accent">Pre-order aktywny</span>
+      &nbsp;·&nbsp; Money-back · 14 dni &nbsp;·&nbsp; Lifetime access
+    </p>
+  </div>
+</section>
+
+<!-- ============ FOOTER (BLACK) ============ -->
+<section class="card black">
+  <footer class="footer">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <h3>HUMBAK</h3>
+        <p>AI Creative Studio. Direction + Automation. Naucz się reżyserować AI, nie tylko z niego generować.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Kurs</h5>
+        <ul>
+          <li><a href="#moves">Cztery ruchy</a></li>
+          <li><a href="#curriculum">Program</a></li>
+          <li><a href="#system">Filozofia</a></li>
+          <li><a href="#testimonials">Opinie</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Firma</h5>
+        <ul>
+          <li><a href="#">O HUMBAK</a></li>
+          <li><a href="#">Manifest</a></li>
+          <li><a href="#">Kontakt</a></li>
+          <li><a href="#">Współpraca z firmą</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Social</h5>
+        <ul>
+          <li><a href="#">Instagram</a></li>
+          <li><a href="#">TikTok</a></li>
+          <li><a href="#">YouTube</a></li>
+          <li><a href="#">LinkedIn</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 HUMBAK · Wszelkie prawa zastrzeżone</span>
+      <span>Polityka prywatności · Regulamin · Cookies</span>
+    </div>
+  </footer>
+</section>
+
+<!-- ============ STICKY BAR ============ -->
+<div class="sticky-bar">
+  <ul class="sticky-bar-links">
+    <li><a href="#moves">Jak</a></li>
+    <li><a href="#curriculum">Program</a></li>
+    <li><a href="#testimonials">Opinie</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <a href="#pricing" class="sticky-cta">Pre-order →</a>
+</div>
+
+<script>
+  // Countdown — 4 czerwca 2026
+  const target = new Date('2026-06-04T23:59:59').getTime();
+  function tick() {
+    const now = new Date().getTime();
+    const diff = target - now;
+    if (diff <= 0) {
+      document.getElementById('countdown').textContent = 'ZAKOŃCZONY';
+      return;
+    }
+    const p = n => String(n).padStart(2, '0');
+    const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const m = Math.floor((diff / 1000 / 60) % 60);
+    const s = Math.floor((diff / 1000) % 60);
+    document.getElementById('countdown').textContent = `${p(d)}d ${p(h)}h ${p(m)}m ${p(s)}s`;
+    const bd = document.getElementById('bd'); if (bd) bd.textContent = p(d);
+    const bh = document.getElementById('bh'); if (bh) bh.textContent = p(h);
+    const bm = document.getElementById('bm'); if (bm) bm.textContent = p(m);
+    const bs = document.getElementById('bs'); if (bs) bs.textContent = p(s);
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-q').forEach(q => {
+    q.addEventListener('click', () => {
+      const item = q.parentElement;
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  // Nav logo Y-axis spin (matches the standalone component, 5s loop)
+  (function spinNavLogo() {
+    const navImg = document.getElementById('navMarkImg');
+    const navSpec = document.getElementById('navMarkSpec');
+    if (!navImg || !navSpec) return;
+
+    const PERIOD_MS = 5000;
+    const MIN_SCALE = 0.012;
+    let start = null;
+
+    function frame(now) {
+      if (start === null) start = now;
+      const t = ((now - start) % PERIOD_MS) / PERIOD_MS;
+      const angle = t * Math.PI * 2;
+      const cos = Math.cos(angle);
+      const isFront = cos >= 0;
+      const scaleX = Math.max(Math.abs(cos), MIN_SCALE);
+
+      navImg.style.transform = `scaleX(${scaleX})`;
+
+      if (isFront) {
+        const sweep = Math.sin(angle) * 18;
+        navSpec.style.transform = `scaleX(${scaleX})`;
+        navSpec.style.opacity = String(0.4 + 0.5 * cos);
+        navSpec.style.background = `linear-gradient(${100 + sweep}deg,
+          rgba(255,255,255,0) 35%,
+          rgba(255,255,255,0.55) 50%,
+          rgba(255,255,255,0) 65%)`;
+      } else {
+        navSpec.style.opacity = '0';
+      }
+
+      requestAnimationFrame(frame);
+    }
+
+    requestAnimationFrame(frame);
+  })();
+</script>
+
+</body>
+</html>
